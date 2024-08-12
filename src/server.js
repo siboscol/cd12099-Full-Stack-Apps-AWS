@@ -27,14 +27,28 @@ app.use(bodyParser.json());
 /**************************************************************************** */
 //! END @TODO1
 
-app.get("/filteredimage", async (req, res) => {
+app.get("/filteredimage", async (req, res, next) => {
   const image_url = req.query.image_url;
 
-  const filteredpath = await filterImageFromURL(image_url);
+  if (!image_url) {
+    return res.status(400).send("Missing image_url!");
+  }
 
-  res.sendFile(filteredpath);
-
-  await deleteLocalFiles(filteredpath)
+  try {
+    const filteredpath = await filterImageFromURL(image_url);
+    // Send the file to the client
+    res.sendFile(filteredpath, async (err) => {
+      if (err) {
+        console.error('Error sending file:', err);
+        res.status(500).send('Error sending file');
+      } else {
+        deleteLocalFiles([filteredpath])
+      }
+    });
+  } catch (error) {
+    console.error('Unexpected error:', error);
+    res.status(500).send('An unexpected error occurred');
+  }
 });
 
 // Root Endpoint
