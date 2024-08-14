@@ -1,6 +1,6 @@
 import express from 'express';
 import bodyParser from 'body-parser';
-import { filterImageFromURL, deleteLocalFiles } from './util/util.js';
+import { filterImageFromURL, deleteLocalFiles, isValidUrl } from './util/util.js';
 
 // Init the Express application
 const app = express();
@@ -32,6 +32,9 @@ app.get("/filteredimage", async (req, res, next) => {
 
   if (!image_url) {
     return res.status(400).send("Missing image_url!");
+  }
+  if (!isValidUrl(image_url)) {
+    return res.status(422).send("Invalid url!")
   }
 
   try {
